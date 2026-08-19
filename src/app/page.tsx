@@ -5,12 +5,20 @@ import { Button } from "@base-ui/react";
 import { Header } from "@/MyComponents/Header";
 import { MainLayer } from "@/MyComponents/Main";
 import { Under } from "@/MyComponents/Under";
-import { useState } from "react";
-import { chatWithOllama } from "@/lib/ollama";
+import { useState, useEffect, useRef } from "react";
+import { chatWithOllama, getOllamaModels, OllamaModel } from "@/lib/ollama";
 import { Message } from "@/lib/types";
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const [hideHeader, setHideHeader] = useState(false);
+  const lastScrollY = useRef(0);
+
+  const stopGeneration = () => {
+    abortControllerRef.current?.abort();
+  };
 
   const handleSend = async (content: string) => {
     const userMessage: Message = {
@@ -20,44 +28,88 @@ export default function Home() {
 
     const updatedMessages = [...messages, userMessage];
 
-    setMessages(updatedMessages);
-
-    setMessages((prev) => [
-      ...prev,
+    setMessages([
+      ...updatedMessages,
       {
         role: "assistant",
         content: "",
       },
     ]);
 
+    const controller = new AbortController();
+
+    abortControllerRef.current = controller;
+    setIsGenerating(true);
+
+    let assistantResponse = "";
+
     try {
-      console.log("HISTORY SENT:", JSON.stringify(updatedMessages, null, 2));
-      await chatWithOllama("llama3.2:3b", updatedMessages, (chunk) => {
-        setMessages((prev) => {
-          const updated = [...prev];
-          const lastIndex = updated.length - 1;
+      await chatWithOllama(
+        selectedModel,
+        updatedMessages,
+        (chunk) => {
+          assistantResponse += chunk;
 
-          const lastMessage = updated[lastIndex];
+          setMessages((prev) => {
+            const updated = [...prev];
+            const lastIndex = updated.length - 1;
 
-          if (lastMessage.role === "assistant") {
             updated[lastIndex] = {
-              ...lastMessage,
-              content: lastMessage.content + chunk,
+              ...updated[lastIndex],
+              content: assistantResponse,
             };
-          }
 
-          return updated;
-        });
-      });
+            return updated;
+          });
+        },
+        controller.signal,
+      );
     } catch (error) {
-      console.error("Ollama error:", error);
+      if (error instanceof DOMException && error.name === "AbortError") {
+        console.log("Generation stopped");
+      } else {
+        console.error(error);
+      }
+    } finally {
+      setIsGenerating(false);
+      abortControllerRef.current = null;
     }
   };
+  const [models, setModels] = useState<OllamaModel[]>([]);
+  const [selectedModel, setSelectedModel] = useState("");
+
+  useEffect(() => {
+    async function loadModels() {
+      try {
+        const models = await getOllamaModels();
+
+        setModels(models);
+
+        if (models.length > 0) {
+          setSelectedModel(models[0].name);
+        }
+      } catch (error) {
+        console.error("Failed to load Ollama models:", error);
+      }
+    }
+
+    loadModels();
+  }, []);
+
   return (
-    <div className="bg-slate-950 min-h-screen flex flex-col text-white">
-      <Header />
-      <MainLayer messages={messages} />
-      <Under onSendTo={handleSend} />
+    <div className="bg-slate-950 relative h-screen flex flex-col text-white">
+      <Header
+        models={models}
+        selectedModel={selectedModel}
+        onModelChange={setSelectedModel}
+        hideHeader={hideHeader}
+      />
+      <MainLayer messages={messages} setHideHeader={setHideHeader} />
+      <Under
+        onSendTo={handleSend}
+        onStop={stopGeneration}
+        isGenerating={isGenerating}
+      />
     </div>
   );
 }

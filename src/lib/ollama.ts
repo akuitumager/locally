@@ -5,10 +5,27 @@ type Message = {
   content: string;
 };
 
+export type OllamaModel = {
+  name: string;
+};
+
+export async function getOllamaModels(): Promise<OllamaModel[]> {
+  const response = await fetch(`${OLLAMA_URL}/api/tags`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch Ollama models");
+  }
+
+  const data = await response.json();
+
+  return data.models;
+}
+
 export async function chatWithOllama(
   model: string,
   messages: Message[],
   onChunk: (chunk: string) => void,
+  signal?: AbortSignal,
 ) {
   const payload = {
     model,
@@ -22,6 +39,7 @@ export async function chatWithOllama(
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
+    signal,
   });
 
   if (!response.ok) {
@@ -38,6 +56,11 @@ export async function chatWithOllama(
   let buffer = "";
 
   while (true) {
+    if (signal?.aborted) {
+    await reader.cancel();
+    break;
+  }
+
     const { value, done } = await reader.read();
 
     if (done) break;

@@ -7,9 +7,11 @@ import Image from "next/image";
 
 type ChatInputProps = {
   onSend: (message: string) => void;
+  onStop: () => void;
+  isGenerating: boolean;
 };
 
-export const ChatInput = ({ onSend }: ChatInputProps) => {
+export const ChatInput = ({ onSend,onStop,isGenerating }: ChatInputProps) => {
   const [input, setInput] = useState("");
 
   const sendMessage = () => {
@@ -45,10 +47,11 @@ export const ChatInput = ({ onSend }: ChatInputProps) => {
           />
 
           <Button
-            type="submit"
-            className="size-10 rounded-full bg-orange-600 hover:bg-orange-700"
+            type={isGenerating ? "button" : "submit"}
+            onClick={isGenerating ? onStop : undefined}
+            className="size-10 rounded-full bg-orange-600 hover:bg-orange-700 flex justify-center items-center"
           >
-            <Image src="/arrow.svg" width={10} height={10} alt="+qq" className="text-bold" />
+            {isGenerating ? <Image src="/svgviewer-output.svg" alt="!" width={12} height={12} /> : <Image src="/arrow.svg" width={12} height={12} alt="+" /> }
           </Button>
         </div>
       </form>

@@ -7,27 +7,57 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Image from "next/image";
+import type { OllamaModel } from "@/lib/ollama";
 
-export const Header = () => {
+type HeaderProps = {
+  models: OllamaModel[];
+  selectedModel: string;
+  onModelChange: (model: string) => void;
+  hideHeader:boolean;
+};
+
+export const Header = ({
+  models,
+  selectedModel,
+  onModelChange,
+  hideHeader,
+}: HeaderProps) => {
   return (
-    <header className="flex h-16 items-center justify-between rounded-md border border-orange-500 bg-slate-700 px-5">
+    <header className={`fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-orange-500/30 bg-slate-900/80 px-5 backdrop-blur-md transition-transform duration-300 ease-in-out ${
+        hideHeader ? "-translate-y-full" : "translate-y-0"
+      }`}>
       <div>
         <h1>Locally</h1>
       </div>
       <div className="flex flex-row gap-10">
-        <Select defaultValue="qwen">
-          <SelectTrigger className="w-40 border-slate-900">
+        <Select
+          value={selectedModel}
+          onValueChange={(value) => {
+            if (value !== null) {
+              onModelChange(value);
+            }
+          }}
+        >
+          <SelectTrigger className="w-40 border-slate-900 font-sans text-lg">
             <SelectValue placeholder="Select model" />
           </SelectTrigger>
 
           <SelectContent>
-            <SelectItem value="qwen">Qwen</SelectItem>
-            <SelectItem value="llama">Llama</SelectItem>
+            {models.map((model) => (
+              <SelectItem key={model.name} value={model.name}>
+                {model.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
         <Button className="bg-orange-600 hover:bg-orange-700 size-10">
-          <Image src="/settings-3110.svg" width={15} height={15} alt="setting" />
+          <Image
+            src="/settings-3110.svg"
+            width={15}
+            height={15}
+            alt="setting"
+          />
         </Button>
       </div>
     </header>
