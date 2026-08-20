@@ -27,7 +27,7 @@ export const Header = ({
         hideHeader ? "-translate-y-full" : "translate-y-0"
       }`}>
       <div>
-        <h1>Locally</h1>
+        <Image src="/Android Small - 1(2).svg" alt="Locally" width={200} height={100} />
       </div>
       <div className="flex flex-row gap-10">
         <Select
@@ -54,8 +54,8 @@ export const Header = ({
         <Button className="bg-orange-600 hover:bg-orange-700 size-10">
           <Image
             src="/settings-3110.svg"
-            width={15}
-            height={15}
+            width={28}
+            height={28}
             alt="setting"
           />
         </Button>

@@ -65,15 +65,28 @@ export default function Home() {
         controller.signal,
       );
     } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") {
-        console.log("Generation stopped");
-      } else {
-        console.error(error);
-      }
-    } finally {
-      setIsGenerating(false);
-      abortControllerRef.current = null;
+    if (error instanceof DOMException && error.name === "AbortError") {
+      setMessages((prev) => {
+        const updated = [...prev];
+        const lastIndex = updated.length - 1;
+
+        if (lastIndex >= 0) {
+          if (!updated[lastIndex].content) {
+            updated[lastIndex] = {
+              ...updated[lastIndex],
+              content: "you stopped this response",
+            };
+          }
+        }
+        return updated;
+      });
+    } else {
+      console.error(error);
     }
+  } finally {
+    setIsGenerating(false);
+    abortControllerRef.current = null;
+  }
   };
   const [models, setModels] = useState<OllamaModel[]>([]);
   const [selectedModel, setSelectedModel] = useState("");
