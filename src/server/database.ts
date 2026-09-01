@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 
-const db = new Database("./data/locally.db");
+const db = new Database("../database/Xtarget.db");
 
 db.pragma("journal_mode = WAL");
 

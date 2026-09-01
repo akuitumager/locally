@@ -13,7 +13,7 @@ type HeaderProps = {
   models: OllamaModel[];
   selectedModel: string;
   onModelChange: (model: string) => void;
-  hideHeader:boolean;
+  hideHeader: boolean;
 };
 
 export const Header = ({
@@ -23,11 +23,18 @@ export const Header = ({
   hideHeader,
 }: HeaderProps) => {
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-orange-500/30 bg-slate-900/80 px-5 backdrop-blur-md transition-transform duration-300 ease-in-out ${
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-orange-500/30 bg-slate-900/80 px-5 backdrop-blur-md transition-transform duration-300 ease-in-out ${
         hideHeader ? "-translate-y-full" : "translate-y-0"
-      }`}>
+      }`}
+    >
       <div>
-        <Image src="/Android Small - 1(2).svg" alt="Locally" width={200} height={100} />
+        <Image
+          src="/Android Small - 1(2).svg"
+          alt="Xtarget"
+          width={200}
+          height={100}
+        />
       </div>
       <div className="flex flex-row gap-10">
         <Select

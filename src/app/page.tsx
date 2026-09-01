@@ -1,13 +1,11 @@
 "use client";
-import Image from "next/image";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@base-ui/react";
-import { Header } from "@/MyComponents/Header";
+import { AppSidebar } from "@/MyComponents/appSidebar";
 import { MainLayer } from "@/MyComponents/Main";
 import { Under } from "@/MyComponents/Under";
 import { useState, useEffect, useRef } from "react";
 import { chatWithOllama, getOllamaModels, OllamaModel } from "@/lib/ollama";
 import { Message } from "@/lib/types";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -110,19 +108,25 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="bg-slate-950 relative h-screen flex flex-col text-white">
-      <Header
+    <div className="flex h-screen w-full overflow-hidden bg-slate-950 text-white">
+      <AppSidebar
         models={models}
         selectedModel={selectedModel}
         onModelChange={setSelectedModel}
-        hideHeader={hideHeader}
       />
-      <MainLayer messages={messages} setHideHeader={setHideHeader} />
-      <Under
-        onSendTo={handleSend}
-        onStop={stopGeneration}
-        isGenerating={isGenerating}
-      />
+
+      <main className="flex flex-1 flex-col h-full overflow-hidden relative">
+        <div className="p-2 min-h-screen w-10 border border-slate-600 flex items-start">
+          <SidebarTrigger className="text-slate-400 hover:text-white" />
+        </div>
+
+        <MainLayer messages={messages} setHideHeader={setHideHeader} />
+        <Under
+          onSendTo={handleSend}
+          onStop={stopGeneration}
+          isGenerating={isGenerating}
+        />
+      </main>
     </div>
   );
 }
